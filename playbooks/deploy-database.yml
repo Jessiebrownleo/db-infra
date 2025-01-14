@@ -1,6 +1,6 @@
 ---
 - name: Deploy Database to Kubernetes Cluster
-  hosts: k8s_nodes  # Updated to match inventory group
+  hosts: k8s-server1  # Updated to match inventory group
   become: yes
   gather_facts: yes
   vars:
