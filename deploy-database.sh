@@ -41,6 +41,10 @@ source ./scripts/database/configure.sh
 echo "📂 Creating namespace and labeling it..."
 source ./scripts/database/namespace.sh
 
+# Get the node name for PV node affinity
+export NODE_NAME=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
+echo "🌐 Node Name: ${NODE_NAME}"
+
 # Create StorageClass, PV, and PVC
 echo "💾 Creating StorageClass, PV, and PVC..."
 source ./scripts/database/storage.sh
