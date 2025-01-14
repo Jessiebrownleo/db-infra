@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ${NAMESPACE}-${DB_NAME}-pv
+  labels:
+    type: database
+    app: ${DB_NAME}
+    namespace: ${NAMESPACE}
+spec:
+  capacity:
+    storage: ${STORAGE_SIZE}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  hostPath:
+    path: /data/${NAMESPACE}/${DB_NAME}
+    type: DirectoryOrCreate
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - ${NODE_NAME}
