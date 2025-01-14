@@ -2,7 +2,7 @@
 set -x  # Enable debug mode
 
 # Logging
-LOG_FILE="deploy-database.log"
+LOG_FILE="/home/sen/cloudinator/deploy-database.log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 echo "🚀 Starting database deployment at $(date)"
 
