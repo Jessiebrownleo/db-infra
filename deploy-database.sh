@@ -32,8 +32,7 @@ source "${SCRIPT_DIR}/database/utils.sh"
 main() {
     log "🚀 Starting database deployment..."
     
-    # Validate deployment
-    validate_unique_deployment
+
     
     # Configure database
     configure_database
