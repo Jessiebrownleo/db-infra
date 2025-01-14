@@ -77,7 +77,7 @@ configure_database() {
     esac
 }
 
-# Create namespace and secret
+# Fix for the create_namespace_resources function
 create_namespace_resources() {
     # Create namespace if not exists
     kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
@@ -94,12 +94,19 @@ create_namespace_resources() {
             --from-literal=MYSQL_PASSWORD=${DB_PASSWORD} \
             --from-literal=MYSQL_DATABASE=${DB_NAME} \
             --dry-run=client -o yaml | kubectl apply -f -
-    else
+    elif [ "${DB_TYPE}" == "postgres" ]; then
         kubectl create secret generic ${DB_NAME}-secret \
             --namespace=${NAMESPACE} \
-            --from-literal=${ENV_USERNAME_VAR}=${DB_USERNAME} \
-            --from-literal=${ENV_PASSWORD_VAR}=${DB_PASSWORD} \
-            --from-literal=${ENV_DB_VAR}=${DB_NAME} \
+            --from-literal=POSTGRES_USER=${DB_USERNAME} \
+            --from-literal=POSTGRES_PASSWORD=${DB_PASSWORD} \
+            --from-literal=POSTGRES_DB=${DB_NAME} \
+            --dry-run=client -o yaml | kubectl apply -f -
+    elif [ "${DB_TYPE}" == "mongodb" ]; then
+        kubectl create secret generic ${DB_NAME}-secret \
+            --namespace=${NAMESPACE} \
+            --from-literal=MONGO_INITDB_ROOT_USERNAME=${DB_USERNAME} \
+            --from-literal=MONGO_INITDB_ROOT_PASSWORD=${DB_PASSWORD} \
+            --from-literal=MONGO_INITDB_DATABASE=${DB_NAME} \
             --dry-run=client -o yaml | kubectl apply -f -
     fi
 }
