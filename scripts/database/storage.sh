@@ -2,16 +2,16 @@
 
 create_storage_class() {
     if ! kubectl get storageclass local-storage &>/dev/null; then
-        kubectl apply -f templates/storageclass.yaml
+        kubectl apply -f "/home/sen/cloudinator/templates/storageclass.yaml"
     fi
 }
 
 create_persistent_volume() {
-    envsubst < templates/pv.yaml | kubectl apply -f -
+    envsubst < "/home/sen/cloudinator/templates/pv.yaml" | kubectl apply -f -
 }
 
 create_persistent_volume_claim() {
-    envsubst < templates/pvc.yaml | kubectl apply -f -
+    envsubst < "/home/sen/cloudinator/templates/pvc.yaml" | kubectl apply -f -
 }
 
 wait_for_pvc() {
