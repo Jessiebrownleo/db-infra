@@ -1,67 +1,45 @@
 #!/bin/bash
-set -x  # Enable debug mode
 
-# Logging
-LOG_FILE="/home/sen/cloudinator/deploy-database.log"
-exec > >(tee -a "$LOG_FILE") 2>&1
-echo "🚀 Starting database deployment at $(date)"
+# Source all utility scripts
+source scripts/database/utils.sh
+source scripts/database/validate.sh
+source scripts/database/configure.sh
+source scripts/database/namespace.sh
+source scripts/database/storage.sh
+source scripts/database/network.sh
+source scripts/database/service.sh
+source scripts/database/statefulset.sh
+source scripts/database/ingress.sh
 
-# Input variables
-export DB_NAME=$1                  # Database name (required)
-export DB_TYPE=$2                  # Database type (required)
-export DB_VERSION=$3               # Database version (required)
-export NAMESPACE=${4:-default}     # Default namespace
-export DB_PASSWORD=$5              # Database password (required for MySQL)
-export DB_USERNAME=${6:-defaultUser} # Database username (default for MySQL)
-export DOMAIN_NAME=$7              # Optional domain name for Ingress
-export STORAGE_SIZE=${8:-1Gi}      # Default storage size
-export PORT=${9:-30000}            # Default port for NodePort (optional, default is 30000)
-export NODE_NAME=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')  # Get node name
-
-# Error handling
-handle_error() {
-    local exit_code=$?
-    local command="$BASH_COMMAND"
-    echo "❌ Error: Command '$command' failed with exit code $exit_code."
-    exit $exit_code
+# Main deployment function
+main() {
+    echo "🚀 Starting database deployment..."
+    
+    create_namespace_resources
+    validate_unique_deployment
+    
+    NODE_NAME=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
+    echo "Debug - Selected Node: ${NODE_NAME}"
+    
+    configure_database
+    create_storage_class
+    create_network_policy
+    initialize_host_directory
+    create_persistent_volume
+    create_persistent_volume_claim
+    
+    echo "⏳ Waiting for PVC to bind..."
+    kubectl wait --for=condition=Bound pvc/${DB_NAME}-pvc -n ${NAMESPACE} --timeout=60s
+    
+    create_statefulset
+    create_service
+    
+    if [ ! -z "${DOMAIN_NAME}" ]; then
+        create_ingress
+    fi
+    
+    print_deployment_summary
 }
-trap 'handle_error' ERR
 
-# Source utility functions
-source ./scripts/database/utils.sh
-
-# Validate inputs
-echo "🔍 Validating inputs..."
-validate_inputs "${DB_NAME}" "${DB_TYPE}" "${DB_VERSION}"
-
-# Configure database
-echo "⚙️ Configuring database..."
-source ./scripts/database/configure.sh
-
-# Create namespace and label it
-echo "📂 Creating namespace and labeling it..."
-source ./scripts/database/namespace.sh
-
-# Create StorageClass, PV, and PVC
-echo "💾 Creating StorageClass, PV, and PVC..."
-source ./scripts/database/storage.sh
-
-# Create NetworkPolicy
-echo "🔒 Creating NetworkPolicy..."
-source ./scripts/database/network.sh
-
-# Create StatefulSet
-echo "🚀 Creating StatefulSet..."
-source ./scripts/database/statefulset.sh
-
-# Create Service
-echo "🔌 Creating Service..."
-source ./scripts/database/service.sh
-
-# Create Ingress (if DOMAIN_NAME is provided)
-if [ -n "${DOMAIN_NAME}" ]; then
-    echo "🌐 Creating Ingress..."
-    source ./scripts/database/ingress.sh
-fi
-
-echo "✅ Database deployment completed successfully!"
+# Execute main function
+main

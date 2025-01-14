@@ -1,3 +1,5 @@
 #!/bin/bash
 
-envsubst < ./templates/service.yaml | kubectl apply -f -
+create_service() {
+    envsubst < templates/service.yaml | kubectl apply -f -
+}

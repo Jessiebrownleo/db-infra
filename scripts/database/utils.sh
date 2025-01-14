@@ -1,17 +1,22 @@
 #!/bin/bash
 
-validate_inputs() {
-    local DB_NAME=$1
-    local DB_TYPE=$2
-    local DB_VERSION=$3
-
-    if [ -z "${DB_NAME}" ] || [ -z "${DB_TYPE}" ] || [ -z "${DB_VERSION}" ]; then
-        echo "❌ Error: DB_NAME, DB_TYPE, and DB_VERSION are required."
-        exit 1
+print_deployment_summary() {
+    echo "✅ Database deployment completed successfully!"
+    echo ""
+    echo "📊 Database Details:"
+    echo "  - Name: ${DB_NAME}"
+    echo "  - Type: ${DB_TYPE}"
+    echo "  - Version: ${DB_VERSION}"
+    echo "  - Namespace: ${NAMESPACE}"
+    echo "  - Port: ${DB_PORT}"
+    echo ""
+    echo "🔌 Connection Information:"
+    echo "  - Internal: ${DB_NAME}.${NAMESPACE}.svc.cluster.local:${DB_PORT}"
+    if [ ! -z "${DOMAIN_NAME}" ]; then
+        echo "  - External: ${DB_NAME}-${NAMESPACE}.${DOMAIN_NAME}"
     fi
-
-    if [[ "${DB_TYPE}" != "mysql" && "${DB_TYPE}" != "postgres" && "${DB_TYPE}" != "mongodb" ]]; then
-        echo "❌ Error: Unsupported database type. Use 'mysql', 'postgres', or 'mongodb'."
-        exit 1
-    fi
+    echo "  - NodePort: ${PORT}"
+    echo "⏳ Wait for the database to be ready:"
+    echo "  kubectl get pods -n ${NAMESPACE} -l app=${DB_NAME} -w"
+    echo "  kubectl logs -f -n ${NAMESPACE} -l app=${DB_NAME}"
 }

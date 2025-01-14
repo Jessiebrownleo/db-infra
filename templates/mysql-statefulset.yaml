@@ -21,9 +21,15 @@ spec:
         runAsUser: 999
         runAsGroup: 999
       containers:
-      - name: mysql
-        image: mysql:${DB_VERSION}
+      - name: ${DB_NAME}
+        image: ${DB_IMAGE}
         imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 999
+          runAsGroup: 999
+          capabilities:
+            drop: ["ALL"]
         env:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
@@ -46,11 +52,12 @@ spec:
               name: ${DB_NAME}-secret
               key: MYSQL_DATABASE
         ports:
-        - containerPort: 3306
-          name: mysql
+        - name: db-port
+          containerPort: ${DB_PORT}
+          protocol: TCP
         volumeMounts:
         - name: data
-          mountPath: /var/lib/mysql
+          mountPath: ${VOLUME_MOUNT_PATH}
         resources:
           requests:
             memory: "256Mi"
@@ -58,11 +65,7 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
-  volumeClaimTemplates:
-  - metadata:
-      name: data
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: ${STORAGE_SIZE}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: ${DB_NAME}-pvc

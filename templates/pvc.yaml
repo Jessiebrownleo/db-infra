@@ -12,6 +12,4 @@ spec:
       storage: ${STORAGE_SIZE}
   selector:
     matchLabels:
-      type: database
       app: ${DB_NAME}
-      namespace: ${NAMESPACE}

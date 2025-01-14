@@ -3,9 +3,7 @@ kind: PersistentVolume
 metadata:
   name: ${NAMESPACE}-${DB_NAME}-pv
   labels:
-    type: database
     app: ${DB_NAME}
-    namespace: ${NAMESPACE}
 spec:
   capacity:
     storage: ${STORAGE_SIZE}
@@ -13,9 +11,8 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
-  hostPath:
+  local:
     path: /data/${NAMESPACE}/${DB_NAME}
-    type: DirectoryOrCreate
   nodeAffinity:
     required:
       nodeSelectorTerms:

@@ -21,9 +21,15 @@ spec:
         runAsUser: 999
         runAsGroup: 999
       containers:
-      - name: mongodb
-        image: mongo:${DB_VERSION}
+      - name: ${DB_NAME}
+        image: ${DB_IMAGE}
         imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 999
+          runAsGroup: 999
+          capabilities:
+            drop: ["ALL"]
         env:
         - name: MONGO_INITDB_ROOT_USERNAME
           valueFrom:
@@ -41,11 +47,12 @@ spec:
               name: ${DB_NAME}-secret
               key: MONGO_INITDB_DATABASE
         ports:
-        - containerPort: 27017
-          name: mongodb
+        - name: db-port
+          containerPort: ${DB_PORT}
+          protocol: TCP
         volumeMounts:
-        - name: mongodb-data
-          mountPath: /data/db
+        - name: data
+          mountPath: ${VOLUME_MOUNT_PATH}
         resources:
           requests:
             memory: "256Mi"
@@ -53,11 +60,7 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
-  volumeClaimTemplates:
-  - metadata:
-      name: mongodb-data
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: ${STORAGE_SIZE}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: ${DB_NAME}-pvc
