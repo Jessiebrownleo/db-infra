@@ -32,39 +32,39 @@ source "${SCRIPT_DIR}/database/utils.sh"
 main() {
     log "🚀 Starting database deployment..."
     
-    echo "Configure database"
+    
     
     # Configure database
     configure_database
-    
+    echo "Configure database"
     
     # Create StorageClass
     create_storage_class
     echo "Validate storage class"
     # Create NetworkPolicy
     create_network_policy
-    
+    echo "Create network policy"
     # Initialize host directory
     initialize_host_directory
-    
+    echo "Initialize host directory"
     # Create namespace and secret
     create_namespace_resources
-    
+    echo "Create namespace resources"
     # Create PV
     create_persistent_volume
-    
+    echo "Create persistent volume"
     # Create PVC
     create_persistent_volume_claim
-    
+    echo "Create persistent volume claim"
     # Wait for PVC to bind
     wait_for_pvc
-    
+    echo "Wait for PVC to bind"
     # Create StatefulSet
     create_statefulset
-    
+    echo "Create stateful set"
     # Create Service
     create_service
-    
+    echo "Create service"
     # Create Ingress (if domain name is provided)
     if [ ! -z "${DOMAIN_NAME}" ]; then
         create_ingress
