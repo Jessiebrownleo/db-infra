@@ -32,11 +32,12 @@ source "${SCRIPT_DIR}/database/utils.sh"
 main() {
     log "🚀 Starting database deployment..."
     
-
+    echo "Configure database"
     
     # Configure database
     configure_database
     
+    echo "Validate storage class"
     # Create StorageClass
     create_storage_class
     
