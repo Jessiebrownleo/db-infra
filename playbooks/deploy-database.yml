@@ -1,82 +1,41 @@
 ---
-- name: Deploy Database to Kubernetes Cluster
-  hosts: k8s-server1
+- name: Deploy database with Kubernetes
+  hosts: kube_servers  # Target group defined in your inventory
   become: yes
-  gather_facts: yes
-  vars:
-    cloudinator_dir: /home/sen/cloudinator
-    db_name: "{{ DB_NAME }}"
-    db_type: "{{ DB_TYPE }}"
-    db_version: "{{ DB_VERSION }}"
-    namespace: "{{ NAMESPACE }}"
-    db_password: "{{ DB_PASSWORD }}"
-    db_username: "{{ DB_USERNAME }}"
-    domain_name: "{{ DOMAIN_NAME }}"
-    storage_size: "{{ STORAGE_SIZE }}"
-    port: "{{ PORT }}"
-    playbook_dir: "{{ playbook_dir }}"
-
-  pre_tasks:
-    - name: Debug paths
-      debug:
-        msg:
-          - "Playbook dir: {{ playbook_dir }}"
-          - "Current working directory: {{ lookup('env', 'PWD') }}"
-
-    - name: Ensure cloudinator directory exists
-      file:
-        path: "{{ cloudinator_dir }}"
-        state: directory
-        mode: '0755'
-      become: yes
-
-    - name: Ensure subdirectories exist
-      file:
-        path: "{{ cloudinator_dir }}/{{ item }}"
-        state: directory
-        mode: '0755'
-      with_items:
-        - scripts/database
-        - templates
-      become: yes
-
   tasks:
-    - name: Copy deploy-database.sh
-      copy:
-        src: "{{ playbook_dir }}/../deploy-database.sh"
-        dest: "{{ cloudinator_dir }}/deploy-database.sh"
+    - name: Ensure deployment directory exists
+      file:
+        path: /home/sen/cloudinator
+        state: directory
         mode: '0755'
-      become: yes
 
-    - name: Copy scripts directory
+    - name: Copy the scripts directory to the Kubernetes server
       copy:
-        src: "{{ playbook_dir }}/../scripts/database/"
-        dest: "{{ cloudinator_dir }}/scripts/database/"
+        src: ../scripts/
+        dest: /home/sen/cloudinator/scripts/
         mode: '0755'
-      become: yes
 
-    - name: Copy templates directory
+    - name: Copy the templates directory to the Kubernetes server
       copy:
-        src: "{{ playbook_dir }}/../templates/"
-        dest: "{{ cloudinator_dir }}/templates/"
-        mode: '0644'
-      become: yes
+        src: ../templates/
+        dest: /home/sen/cloudinator/templates/
+        mode: '0755'
 
-    - name: Execute database deployment script
+    - name: Copy the deploy-database.sh script to the Kubernetes server
+      copy:
+        src: ../deploy-database.sh
+        dest: /home/sen/cloudinator/deploy-database.sh
+        mode: '0755'
+
+    - name: Execute the database deployment script
       command: >
-        bash {{ cloudinator_dir }}/deploy-database.sh
-        {{ db_name }}
-        {{ db_type }}
-        {{ db_version }}
-        {{ namespace }}
-        {{ db_password }}
-        {{ db_username }}
-        {{ domain_name }}
-        {{ storage_size }}
-        {{ port }}
-      register: deploy_output
-      become: yes
-
-    - name: Display deployment output
-      debug:
-        var: deploy_output.stdout_lines
+        bash /home/sen/cloudinator/deploy-database.sh
+        {{ DB_NAME }}
+        {{ DB_TYPE }}
+        {{ DB_VERSION }}
+        {{ NAMESPACE }}
+        {{ DB_PASSWORD }}
+        {{ DB_USERNAME }}
+        {{ DOMAIN_NAME }}
+        {{ STORAGE_SIZE }}
+        {{ PORT }}
