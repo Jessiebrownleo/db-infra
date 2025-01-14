@@ -18,7 +18,7 @@ STORAGE_SIZE=${8:-1Gi}
 PORT=${9:-30000}
 
 # Source all scripts
-SCRIPT_DIR="$(dirname "$0")"
+SCRIPT_DIR="/home/sen/cloudinator/scripts"
 source "${SCRIPT_DIR}/database/validate.sh"
 source "${SCRIPT_DIR}/database/configure.sh"
 source "${SCRIPT_DIR}/database/storage.sh"
