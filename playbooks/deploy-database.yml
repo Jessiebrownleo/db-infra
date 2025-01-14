@@ -1,6 +1,6 @@
 ---
 - name: Deploy Database to Kubernetes Cluster
-  hosts: k8s-server1  # Updated to match inventory group
+  hosts: k8s-server1
   become: yes
   gather_facts: yes
   vars:
@@ -14,32 +14,52 @@
     domain_name: "{{ DOMAIN_NAME }}"
     storage_size: "{{ STORAGE_SIZE }}"
     port: "{{ PORT }}"
+    playbook_dir: "{{ playbook_dir }}"
 
   pre_tasks:
-    - name: Create cloudinator directory
+    - name: Debug paths
+      debug:
+        msg:
+          - "Playbook dir: {{ playbook_dir }}"
+          - "Current working directory: {{ lookup('env', 'PWD') }}"
+
+    - name: Ensure cloudinator directory exists
       file:
         path: "{{ cloudinator_dir }}"
         state: directory
         mode: '0755'
       become: yes
 
-  tasks:
-    - name: Debug variables
-      debug:
-        msg: 
-          - "DB Name: {{ db_name }}"
-          - "Namespace: {{ namespace }}"
-          - "Directory: {{ cloudinator_dir }}"
-
-    - name: Copy deployment files
-      copy:
-        src: "{{ item.src }}"
-        dest: "{{ cloudinator_dir }}/{{ item.dest }}"
+    - name: Ensure subdirectories exist
+      file:
+        path: "{{ cloudinator_dir }}/{{ item }}"
+        state: directory
         mode: '0755'
       with_items:
-        - { src: 'deploy-database.sh', dest: 'deploy-database.sh' }
-        - { src: 'scripts/', dest: 'scripts/' }
-        - { src: 'templates/', dest: 'templates/' }
+        - scripts/database
+        - templates
+      become: yes
+
+  tasks:
+    - name: Copy deploy-database.sh
+      copy:
+        src: "{{ playbook_dir }}/../deploy-database.sh"
+        dest: "{{ cloudinator_dir }}/deploy-database.sh"
+        mode: '0755'
+      become: yes
+
+    - name: Copy scripts directory
+      copy:
+        src: "{{ playbook_dir }}/../scripts/database/"
+        dest: "{{ cloudinator_dir }}/scripts/database/"
+        mode: '0755'
+      become: yes
+
+    - name: Copy templates directory
+      copy:
+        src: "{{ playbook_dir }}/../templates/"
+        dest: "{{ cloudinator_dir }}/templates/"
+        mode: '0644'
       become: yes
 
     - name: Execute database deployment script
