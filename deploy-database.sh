@@ -37,10 +37,10 @@ main() {
     # Configure database
     configure_database
     
-    echo "Validate storage class"
+    
     # Create StorageClass
     create_storage_class
-    
+    echo "Validate storage class"
     # Create NetworkPolicy
     create_network_policy
     

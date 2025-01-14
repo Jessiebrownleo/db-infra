@@ -1,7 +1,7 @@
 #!/bin/bash
 
 create_network_policy() {
-    envsubst < "/home/sen/cloudinatortemplates/networkpolicy.yaml" | kubectl apply -f -
+    envsubst < "/home/sen/cloudinator/templates/networkpolicy.yaml" | kubectl apply -f -
 }
 
 create_ingress() {
