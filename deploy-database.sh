@@ -7,15 +7,16 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 echo "🚀 Starting database deployment at $(date)"
 
 # Input variables
-DB_NAME=$1                  # Database name (required)
-DB_TYPE=$2                  # Database type (required)
-DB_VERSION=$3               # Database version (required)
-NAMESPACE=${4:-default}     # Default namespace
-DB_PASSWORD=$5              # Database password (required for MySQL)
-DB_USERNAME=${6:-defaultUser} # Database username (default for MySQL)
-DOMAIN_NAME=$7              # Optional domain name for Ingress
-STORAGE_SIZE=${8:-1Gi}      # Default storage size
-PORT=${9:-30000}            # Default port for NodePort (optional, default is 30000)
+export DB_NAME=$1                  # Database name (required)
+export DB_TYPE=$2                  # Database type (required)
+export DB_VERSION=$3               # Database version (required)
+export NAMESPACE=${4:-default}     # Default namespace
+export DB_PASSWORD=$5              # Database password (required for MySQL)
+export DB_USERNAME=${6:-defaultUser} # Database username (default for MySQL)
+export DOMAIN_NAME=$7              # Optional domain name for Ingress
+export STORAGE_SIZE=${8:-1Gi}      # Default storage size
+export PORT=${9:-30000}            # Default port for NodePort (optional, default is 30000)
+export NODE_NAME=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')  # Get node name
 
 # Error handling
 handle_error() {
@@ -40,10 +41,6 @@ source ./scripts/database/configure.sh
 # Create namespace and label it
 echo "📂 Creating namespace and labeling it..."
 source ./scripts/database/namespace.sh
-
-# Get the node name for PV node affinity
-export NODE_NAME=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
-echo "🌐 Node Name: ${NODE_NAME}"
 
 # Create StorageClass, PV, and PVC
 echo "💾 Creating StorageClass, PV, and PVC..."
