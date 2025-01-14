@@ -44,7 +44,7 @@ spec:
         - containerPort: 5432
           name: postgres
         volumeMounts:
-        - name: postgres-data
+        - name: data
           mountPath: /var/lib/postgresql/data
         resources:
           requests:
@@ -55,7 +55,7 @@ spec:
             cpu: "500m"
   volumeClaimTemplates:
   - metadata:
-      name: postgres-data
+      name: data
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
