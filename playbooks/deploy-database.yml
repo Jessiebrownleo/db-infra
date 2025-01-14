@@ -1,44 +1,46 @@
 ---
 - name: Deploy Database to Kubernetes Cluster
-  hosts: k8s_master
+  hosts: k8s_nodes  # Updated to match inventory group
   become: yes
+  gather_facts: yes
   vars:
     cloudinator_dir: /home/sen/cloudinator
-    db_name: "{{ db_name }}"
-    db_type: "{{ db_type }}"
-    db_version: "{{ db_version }}"
-    namespace: "{{ namespace }}"
-    db_password: "{{ db_password }}"
-    db_username: "{{ db_username }}"
-    domain_name: "{{ domain_name }}"
-    storage_size: "{{ storage_size }}"
-    port: "{{ port }}"
+    db_name: "{{ DB_NAME }}"
+    db_type: "{{ DB_TYPE }}"
+    db_version: "{{ DB_VERSION }}"
+    namespace: "{{ NAMESPACE }}"
+    db_password: "{{ DB_PASSWORD }}"
+    db_username: "{{ DB_USERNAME }}"
+    domain_name: "{{ DOMAIN_NAME }}"
+    storage_size: "{{ STORAGE_SIZE }}"
+    port: "{{ PORT }}"
 
-  tasks:
-    - name: Ensure cloudinator directory exists
+  pre_tasks:
+    - name: Create cloudinator directory
       file:
         path: "{{ cloudinator_dir }}"
         state: directory
         mode: '0755'
+      become: yes
 
-    - name: Create required subdirectories
-      file:
-        path: "{{ cloudinator_dir }}/{{ item }}"
-        state: directory
-        mode: '0755'
-      with_items:
-        - scripts/database
-        - templates
+  tasks:
+    - name: Debug variables
+      debug:
+        msg: 
+          - "DB Name: {{ db_name }}"
+          - "Namespace: {{ namespace }}"
+          - "Directory: {{ cloudinator_dir }}"
 
-    - name: Copy deployment scripts and templates
+    - name: Copy deployment files
       copy:
         src: "{{ item.src }}"
         dest: "{{ cloudinator_dir }}/{{ item.dest }}"
         mode: '0755'
       with_items:
-        - { src: '../deploy-database.sh', dest: 'deploy-database.sh' }
-        - { src: '../scripts/database/', dest: 'scripts/database/' }
-        - { src: '../templates/', dest: 'templates/' }
+        - { src: 'deploy-database.sh', dest: 'deploy-database.sh' }
+        - { src: 'scripts/', dest: 'scripts/' }
+        - { src: 'templates/', dest: 'templates/' }
+      become: yes
 
     - name: Execute database deployment script
       command: >
@@ -53,6 +55,7 @@
         {{ storage_size }}
         {{ port }}
       register: deploy_output
+      become: yes
 
     - name: Display deployment output
       debug:
